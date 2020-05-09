@@ -1,9 +1,9 @@
 import React, { useContext, useCallback } from "react";
 import styled from "styled-components";
-import { StoreContext, EditorContext } from "../contexts";
+import { StoreContext, EditorContext, SelectionContext } from "../contexts";
 import Checkbox from "./Checkbox";
 import _ from "lodash";
-import { useParams } from "@reach/router";
+import { useParams, useNavigate } from "@reach/router";
 
 const Row = styled.div`
   --height: 40px;
@@ -59,7 +59,9 @@ let timer;
 const Item = ({ item, selected, toggleItem, setCoordinates, setDragging }) => {
   const { id, senderName, senderEmail, subject, content } = item;
   const { dispatch, T } = useContext(StoreContext);
+  const [, setSelected] = useContext(SelectionContext);
   const { folder } = useParams();
+  const navigate = useNavigate();
   const { replaceDraft, setEditing } = useContext(EditorContext);
 
   const moveDragImage = useCallback(
@@ -91,16 +93,24 @@ const Item = ({ item, selected, toggleItem, setCoordinates, setDragging }) => {
     });
   };
 
-  const onMouseDown = () => {
+  const onMouseDown = (e) => {
     timer = setTimeout(() => {
       toggleItem(item, true);
+      timer = null;
     }, 500);
   };
 
-  const onMouseUp = () => {
+  const onMouseUp = (e) => {
     if (timer) {
       clearTimeout(timer);
       timer = null;
+      if (folder === "drafts") {
+        replaceDraft(item);
+        setEditing(true);
+      } else {
+        setSelected([]);
+        navigate(`/${folder}/${item.id}`);
+      }
     }
   };
 
@@ -113,30 +123,30 @@ const Item = ({ item, selected, toggleItem, setCoordinates, setDragging }) => {
       onDragEnd={onDragEnd}
       onMouseDown={onMouseDown}
       onMouseUp={onMouseUp}
-      onClick={() => {
-        if (folder === "drafts") {
-          replaceDraft(item);
-          setEditing(true);
-        } else {
-          // open detail page
-        }
-      }}
     >
       {folder !== "trash" && (
         <Checkbox
           checked={selected}
           onChange={() => toggleItem(item, !selected)}
+          onMouseDown={(e) => e.stopPropagation()}
+          onMouseUp={(e) => e.stopPropagation()}
         />
       )}
       <From>{senderName || senderEmail || "(No name)"}</From>
       <Summary>
         <Subject>{format(20)(subject) || "(empty)"}</Subject>
         &nbsp;
-        <Preheader>{format(60)(content) || "(empty)"}</Preheader>
+        <Preheader>{format(50)(content) || "(empty)"}</Preheader>
       </Summary>
       {folder !== "trash" && (
         <Actions>
-          <Button onClick={deleteItem}>DELETE</Button>
+          <Button
+            onClick={deleteItem}
+            onMouseDown={(e) => e.stopPropagation()}
+            onMouseUp={(e) => e.stopPropagation()}
+          >
+            DELETE
+          </Button>
           <Button>Mark as Read</Button>
         </Actions>
       )}

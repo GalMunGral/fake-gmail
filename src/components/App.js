@@ -4,6 +4,7 @@ import { Router, Redirect } from "@reach/router";
 import AppBar from "./AppBar";
 import SideBar from "./SideBar";
 import Mailbox from "./Mailbox";
+import Detail from "./Detail";
 import { withEditor, withSelection, withStore } from "../contexts";
 
 const Container = styled.div`
@@ -27,12 +28,12 @@ const StyledMailbox = styled(Mailbox)`
   grid-area: c;
 `;
 
-const App = ({ folder }) => {
-  return /(inbox|sent|drafts|trash)$/.test(folder) ? (
+const App = ({ folder, id }) => {
+  return /(inbox|sent|drafts|trash)/.test(folder) ? (
     <Container>
       <StyledAppBar />
       <StyledSideBar />
-      <StyledMailbox />
+      {id ? <Detail /> : <StyledMailbox />}
     </Container>
   ) : (
     <Redirect to="/inbox" noThrow />
@@ -41,7 +42,9 @@ const App = ({ folder }) => {
 
 const RoutedApp = () => (
   <Router>
+    <App path=":folder/:id" />
     <App path=":folder" />
+    <Redirect from="/" to="/inbox" noThrow />
   </Router>
 );
 
