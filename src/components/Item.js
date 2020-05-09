@@ -1,6 +1,6 @@
 import React, { useContext, useCallback } from "react";
 import styled from "styled-components";
-import { StoreContext } from "./App";
+import { StoreContext, EditorContext } from "../contexts";
 import Checkbox from "./Checkbox";
 import _ from "lodash";
 import { useParams } from "@reach/router";
@@ -57,9 +57,10 @@ const format = (length) => (s) => {
 let timer;
 
 const Item = ({ item, selected, toggleItem, setCoordinates, setDragging }) => {
-  const { id, senderName, subject, content } = item;
+  const { id, senderName, senderEmail, subject, content } = item;
   const { dispatch, T } = useContext(StoreContext);
   const { folder } = useParams();
+  const { replaceDraft, setEditing } = useContext(EditorContext);
 
   const moveDragImage = useCallback(
     _.throttle((x, y) => {
@@ -86,7 +87,7 @@ const Item = ({ item, selected, toggleItem, setCoordinates, setDragging }) => {
   const deleteItem = () => {
     dispatch({
       type: T.DELETE,
-      payload: { id },
+      payload: { folder, id },
     });
   };
 
@@ -105,28 +106,40 @@ const Item = ({ item, selected, toggleItem, setCoordinates, setDragging }) => {
 
   return (
     <Row
-      draggable={folder === "inbox"}
+      draggable={folder !== "trash"}
       selected={selected}
       onDragStart={onDragStart}
       onDrag={onDrag}
       onDragEnd={onDragEnd}
       onMouseDown={onMouseDown}
       onMouseUp={onMouseUp}
+      onClick={() => {
+        if (folder === "drafts") {
+          replaceDraft(item);
+          setEditing(true);
+        } else {
+          // open detail page
+        }
+      }}
     >
-      <Checkbox
-        checked={selected}
-        onChange={() => toggleItem(item, !selected)}
-      />
-      <From>{senderName}</From>
+      {folder !== "trash" && (
+        <Checkbox
+          checked={selected}
+          onChange={() => toggleItem(item, !selected)}
+        />
+      )}
+      <From>{senderName || senderEmail || "(No name)"}</From>
       <Summary>
-        <Subject>{format(20)(subject)}</Subject>
+        <Subject>{format(20)(subject) || "(empty)"}</Subject>
         &nbsp;
-        <Preheader>{format(60)(content)}</Preheader>
+        <Preheader>{format(60)(content) || "(empty)"}</Preheader>
       </Summary>
-      <Actions>
-        <Button onClick={deleteItem}>DELETE</Button>
-        <Button>Mark as Read</Button>
-      </Actions>
+      {folder !== "trash" && (
+        <Actions>
+          <Button onClick={deleteItem}>DELETE</Button>
+          <Button>Mark as Read</Button>
+        </Actions>
+      )}
     </Row>
   );
 };

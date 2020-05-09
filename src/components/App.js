@@ -1,12 +1,10 @@
-import React, { useState } from "react";
+import React from "react";
 import styled from "styled-components";
-import { Router } from "@reach/router";
+import { Router, Redirect } from "@reach/router";
 import AppBar from "./AppBar";
 import SideBar from "./SideBar";
 import Mailbox from "./Mailbox";
-import NewMessage from "./NewMessage";
-import useToggle from "../hooks/toggle";
-import useMailbox from "../hooks/mailbox";
+import { withEditor, withSelection, withStore } from "../contexts";
 
 const Container = styled.div`
   position: fixed;
@@ -25,33 +23,26 @@ const StyledAppBar = styled(AppBar)`
 const StyledSideBar = styled(SideBar)`
   grid-area: b;
 `;
-const StyledRouter = styled(Router)`
+const StyledMailbox = styled(Mailbox)`
   grid-area: c;
 `;
 
-const StoreContext = React.createContext();
-const SelectionContext = React.createContext();
-
-const App = () => {
-  const [editing, open, close] = useToggle();
-  const [mailbox, dispatch, T] = useMailbox();
-  const [selected, setSelected] = useState([]);
-
-  return (
-    <StoreContext.Provider value={{ mailbox, dispatch, T }}>
-      <SelectionContext.Provider value={[selected, setSelected]}>
-        <Container>
-          <StyledAppBar />
-          <StyledSideBar />
-          <StyledRouter>
-            <Mailbox path=":folder" />
-          </StyledRouter>
-          {/* {editing && <NewMessage />} */}
-        </Container>
-      </SelectionContext.Provider>
-    </StoreContext.Provider>
+const App = ({ folder }) => {
+  return /(inbox|sent|drafts|trash)$/.test(folder) ? (
+    <Container>
+      <StyledAppBar />
+      <StyledSideBar />
+      <StyledMailbox />
+    </Container>
+  ) : (
+    <Redirect to="/inbox" noThrow />
   );
 };
 
-export default App;
-export { StoreContext, SelectionContext };
+const RoutedApp = () => (
+  <Router>
+    <App path=":folder" />
+  </Router>
+);
+
+export default withStore(withSelection(withEditor(RoutedApp)));

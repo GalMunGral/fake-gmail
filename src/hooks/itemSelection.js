@@ -1,5 +1,5 @@
 import { useContext, useCallback } from "react";
-import { SelectionContext } from "../components/App";
+import { SelectionContext } from "../contexts";
 
 const useItemSelection = () => {
   const [selected, setSelected] = useContext(SelectionContext);
@@ -7,10 +7,10 @@ const useItemSelection = () => {
   const toggleItem = useCallback(
     (item, shouldSelect) => {
       if (shouldSelect) {
-        if (selected.includes(item)) return;
-        setSelected([...selected, item]);
+        if (selected.includes(item.id)) return;
+        setSelected([...selected, item.id]);
       } else {
-        setSelected(selected.filter((e) => e !== item));
+        setSelected(selected.filter((e) => e !== item.id));
       }
     },
     [selected, setSelected]

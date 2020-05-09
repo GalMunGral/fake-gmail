@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
-import { Redirect } from "@reach/router";
+import { useParams } from "@reach/router";
 import ToolBar from "./ToolBar";
 import Tab from "./Tab";
 import Mails from "./Mails";
@@ -9,7 +9,7 @@ import useMails from "../hooks/mails";
 import usePageSelection from "../hooks/pageSelection";
 
 const PAGE_SIZE = 50;
-const TABS = ["primary", "social", "promotions"];
+const tabs = ["primary", "social", "promotions"];
 
 const Container = styled.div`
   height: 100%;
@@ -26,10 +26,11 @@ const Scrollable = styled.div`
   overflow-y: auto;
 `;
 
-const Mailbox = ({ folder }) => {
-  const [currentTab, setCurrentTab] = useState(TABS[0]);
+const Mailbox = () => {
+  const { folder } = useParams();
+  const [currentTab, setCurrentTab] = useState(tabs[0]);
   const mails = useMails(folder, currentTab);
-  const [start, end, nextPage, prevPage] = usePagination(
+  const [start, end, nextPage, prevPage, resetPage] = usePagination(
     PAGE_SIZE,
     mails.length
   );
@@ -39,6 +40,10 @@ const Mailbox = ({ folder }) => {
     currentTab,
     currentPage
   );
+
+  useEffect(() => {
+    resetPage();
+  }, [folder, currentTab, resetPage]);
 
   return (
     <Container>
@@ -56,7 +61,7 @@ const Mailbox = ({ folder }) => {
       <Scrollable>
         {folder === "inbox" && (
           <Tabs>
-            {TABS.map((tab) => (
+            {tabs.map((tab) => (
               <Tab
                 key={tab}
                 name={tab}
@@ -74,12 +79,4 @@ const Mailbox = ({ folder }) => {
   );
 };
 
-const guard = (Component) => (props) => {
-  return /\/(inbox|sent|drafts|trash)$/.test(props.uri) ? (
-    <Component {...props} />
-  ) : (
-    <Redirect to="/inbox" noThrow />
-  );
-};
-
-export default guard(Mailbox);
+export default Mailbox;

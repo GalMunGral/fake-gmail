@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 
 const usePagination = (pageSize, totalSize) => {
   const [page, setPage] = useState(0);
@@ -7,7 +7,8 @@ const usePagination = (pageSize, totalSize) => {
   const pageCount = Math.ceil(totalSize / pageSize);
   const nextPage = () => setPage(Math.min(page + 1, pageCount - 1));
   const prevPage = () => setPage(Math.max(page - 1, 0));
-  return [start, end, nextPage, prevPage];
+  const resetPage = useCallback(() => setPage(0), []);
+  return [start, end, nextPage, prevPage, resetPage];
 };
 
 export default usePagination;

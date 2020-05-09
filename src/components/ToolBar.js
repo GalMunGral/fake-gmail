@@ -1,6 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 import Checkbox from "./Checkbox";
+import { useParams } from "@reach/router";
 
 const Group = styled.div`
   flex: 0 0 auto;
@@ -24,9 +25,12 @@ const ToolBar = ({
   allSelected,
   toggleAll,
 }) => {
+  const { folder } = useParams();
   return (
     <Group>
-      <Checkbox checked={allSelected} onChange={toggleAll} />
+      {folder !== "trash" && (
+        <Checkbox checked={allSelected} onChange={toggleAll} />
+      )}
       <Progress>
         {start}-{end}/{total}
       </Progress>

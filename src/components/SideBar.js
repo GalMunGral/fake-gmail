@@ -1,7 +1,8 @@
 import React, { useContext } from "react";
 import styled from "styled-components";
-import { Link } from "@reach/router";
-import { StoreContext, SelectionContext } from "./App";
+import { Link, useParams } from "@reach/router";
+import { StoreContext, SelectionContext, EditorContext } from "../contexts";
+import NewMessage from "./NewMessage";
 
 const Div = styled.div`
   background: white;
@@ -9,13 +10,25 @@ const Div = styled.div`
 
 const Button = styled.button``;
 
-const SideBar = ({ className, open }) => {
+const SideBar = ({ className }) => {
+  const { folder } = useParams();
   const { dispatch, T } = useContext(StoreContext);
   const [selected, setSelected] = useContext(SelectionContext);
+  const { createDraft, editing, open } = useContext(EditorContext);
 
   return (
     <Div className={className}>
-      <Button onClick={open}>Compose</Button>
+      <Button
+        onClick={() => {
+          if (!editing) {
+            createDraft();
+            open();
+          }
+        }}
+      >
+        Compose
+      </Button>
+      {editing && <NewMessage />}
       <ul>
         <li>
           <Link to="/inbox">Inbox</Link>
@@ -38,7 +51,10 @@ const SideBar = ({ className, open }) => {
           }}
           onDrop={() => {
             window.setTimeout(() => {
-              dispatch({ type: T.DELETE_SELECTED, payload: selected });
+              dispatch({
+                type: T.DELETE_SELECTED,
+                payload: { folder, selected },
+              });
               setSelected([]);
             });
           }}

@@ -1,5 +1,5 @@
 import { useContext } from "react";
-import { StoreContext } from "../components/App";
+import { StoreContext } from "../contexts";
 
 const useMails = (folder, tab = null) => {
   const { mailbox } = useContext(StoreContext);

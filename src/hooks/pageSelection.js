@@ -1,14 +1,14 @@
 import { useEffect, useContext } from "react";
-import { SelectionContext } from "../components/App";
+import { SelectionContext } from "../contexts";
 
 const usePageSelection = (folder, tab, page) => {
   const [selected, setSelected] = useContext(SelectionContext);
-  const allSelected = page.length === selected.length;
+  const allSelected = page.length && page.length === selected.length;
   const toggleAll = () => {
     if (allSelected) {
       setSelected([]);
     } else {
-      setSelected(page);
+      setSelected(page.map((item) => item.id));
     }
   };
 

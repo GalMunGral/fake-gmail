@@ -1,44 +1,76 @@
-import { useReducer } from "react";
+import { useState, useContext } from "react";
+import { v4 as uuidv4 } from "uuid";
+import { StoreContext } from "../contexts";
+import useEditorHistory from "./editorHistory";
 
-const initialState = {
-  past: [],
-  current: "",
-  future: [],
+const useEditor = () => {
+  const { dispatch, T } = useContext(StoreContext);
+  const [content, updateHistory, undo, redo, resetHistory] = useEditorHistory();
+  const [id, setId] = useState(null);
+  const [recipientEmail, setRecipientEmail] = useState("");
+  const [subject, setSubject] = useState("");
+
+  const [editing, setEditing] = useState(false);
+  const open = () => setEditing(true);
+  const close = () => setEditing(false);
+
+  const message = () => ({
+    id,
+    recipientEmail,
+    senderEmail: "test@example.com",
+    senderName: "Me",
+    subject,
+    content,
+  });
+
+  const saveDraft = () => {
+    dispatch({
+      type: T.SAVE_DRAFT,
+      payload: message(),
+    });
+  };
+
+  const send = () => {
+    dispatch({
+      type: T.SEND,
+      payload: message(),
+    });
+  };
+
+  const createDraft = () => {
+    setId(uuidv4());
+    setRecipientEmail("");
+    setSubject("Subject Line");
+    resetHistory("Type here...");
+  };
+
+  const replaceDraft = (draft) => {
+    saveDraft();
+    setId(draft.id);
+    setRecipientEmail(draft.recipientEmail);
+    setSubject(draft.subject);
+    resetHistory(draft.content);
+  };
+
+  return {
+    id,
+    recipientEmail,
+    setRecipientEmail,
+    subject,
+    setSubject,
+    content,
+    updateHistory,
+    undo,
+    redo,
+    saveDraft,
+    createDraft,
+    replaceDraft,
+    send,
+    editing,
+    setEditing,
+    open,
+    close,
+  };
 };
 
-const reducer = (state, action) => {
-  switch (action.type) {
-    case "UNDO": {
-      if (state.past.length === 0) return state;
-      return {
-        past: state.past.slice(1),
-        current: state.past[0],
-        future: [state.current, ...state.future],
-      };
-    }
-    case "REDO": {
-      if (state.future.length === 0) return state;
-      return {
-        past: [state.current, ...state.past],
-        current: state.future[0],
-        future: state.future.slice(1),
-      };
-    }
-    case "UPDATE": {
-      return {
-        past: [state.current, ...state.past],
-        current: action.payload,
-        future: [],
-      };
-    }
-    default:
-      return state;
-  }
-};
-
-const useHistoryReducer = () => {
-  const [state, dispatch] = useReducer(reducer, initialState);
-  return [state.current, dispatch];
-};
-
-export default useHistoryReducer;
+export default useEditor;

@@ -29,7 +29,7 @@ const Mails = ({ mails }) => {
         <Item
           key={mail.id}
           item={mail}
-          selected={selected.includes(mail)}
+          selected={selected.includes(mail.id)}
           toggleItem={toggleItem}
           setCoordinates={setCoordinates}
           setDragging={setDragging}
