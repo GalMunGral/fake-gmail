@@ -105,7 +105,7 @@ const MenuItem = styled(LinkWrapper)`
       activated ? "var(--theme-light)" : "var(--light-gray)"};
   }
 
-  &:isactive {
+  &:active {
     background: ${({ activated }) =>
       activated ? "var(--theme-light)" : "var(--gray)"};
   }
