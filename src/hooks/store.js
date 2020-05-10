@@ -62,4 +62,16 @@ const useStore = () => {
   return [mailbox, dispatch, Type];
 };
 
-export default useStore;
+const useStoreAsync = () => {
+  const [mailbox, dispatch, Type] = useStore();
+  const asyncDispatch = (action) => {
+    if (typeof action === "function") {
+      action(dispatch);
+    } else {
+      dispatch(action);
+    }
+  };
+  return [mailbox, asyncDispatch, Type];
+};
+
+export default useStoreAsync;

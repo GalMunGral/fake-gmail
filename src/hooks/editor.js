@@ -24,24 +24,32 @@ const useEditor = () => {
   });
 
   const saveDraft = () => {
-    dispatch({
-      type: T.SAVE_DRAFT,
-      payload: message(),
+    dispatch((d) => {
+      setTimeout(() => {
+        d({
+          type: T.SAVE_DRAFT,
+          payload: message(),
+        });
+      }, 200);
     });
   };
 
   const send = () => {
-    dispatch({
-      type: T.SEND,
-      payload: message(),
+    dispatch((d) => {
+      setTimeout(() => {
+        d({
+          type: T.SEND,
+          payload: message(),
+        });
+      }, 200);
     });
   };
 
   const createDraft = () => {
     setId(uuidv4());
     setRecipientEmail("");
-    setSubject("Subject Line");
-    resetHistory("Type here...");
+    setSubject("");
+    resetHistory("");
   };
 
   const replaceDraft = (draft) => {

@@ -1,5 +1,5 @@
 import React, { useState, createContext } from "react";
-import useStore from "../hooks/store";
+import useStoreAsync from "../hooks/store";
 import useEditor from "../hooks/editor";
 
 const StoreContext = createContext();
@@ -25,7 +25,7 @@ const withSelection = (Component) => () => {
 };
 
 const withStore = (Component) => () => {
-  const [mailbox, dispatch, T] = useStore();
+  const [mailbox, dispatch, T] = useStoreAsync();
   return (
     <StoreContext.Provider value={{ mailbox, dispatch, T }}>
       <Component />

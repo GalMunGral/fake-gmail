@@ -1,9 +1,11 @@
 import React, { useContext, useCallback } from "react";
 import styled from "styled-components";
+import _ from "lodash";
 import { StoreContext, EditorContext, SelectionContext } from "../contexts";
 import Checkbox from "./Checkbox";
-import _ from "lodash";
+import IconButton from "./IconButton";
 import { useParams, useNavigate } from "@reach/router";
+import { faTrash } from "@fortawesome/free-solid-svg-icons";
 
 const Row = styled.div`
   --height: 40px;
@@ -17,16 +19,25 @@ const Row = styled.div`
     selected ? "var(--highlight)" : "white"};
   align-items: center;
   justify-content: space-between;
+  cursor: pointer;
+
+  &:hover &:active {
+    cursor: grabbing;
+  }
 
   &:hover {
     background: ${({ selected }) => (selected ? "var(--highlight)" : "white")};
-    filter: brightness(0.9);
+    filter: brightness(0.95);
+
+    & * {
+      visibility: visible;
+    }
   }
 `;
 
-const From = styled.div`
+const SenderInfo = styled.div`
   flex: 0 0 200px;
-  font-weight: bold;
+  font-weight: 600;
 `;
 
 const Summary = styled.div`
@@ -34,19 +45,20 @@ const Summary = styled.div`
 `;
 
 const Subject = styled.span`
-  font-weight: bold;
+  font-weight: 600;
+  text-transform: capitalize;
 `;
 
 const Preheader = styled.span`
-  font-style: italic;
+  font-weight: 300;
+  color: gray;
 `;
 
 const Actions = styled.div`
+  margin-right: 30px;
   flex: 0 0 auto;
-`;
-
-const Button = styled.button`
-  background: var(--gray);
+  visibility: hidden;
+  color: var(--gray);
 `;
 
 const format = (length) => (s) => {
@@ -69,16 +81,15 @@ const Item = ({ item, selected, toggleItem, setCoordinates, setDragging }) => {
       setCoordinates([x, y]);
       setDragging(true);
     }),
-    [setCoordinates]
+    []
   );
 
   const onDrag = (e) => {
-    moveDragImage(e.clientX - 50, e.clientY - 25);
+    const OFFSET = 15;
+    moveDragImage(e.clientX - OFFSET, e.clientY - OFFSET);
   };
 
   const onDragStart = (e) => {
-    e.dataTransfer.dropEffect = "move";
-    e.dataTransfer.setData("text/plain", id);
     e.dataTransfer.setDragImage(new Image(), 0, 0);
   };
 
@@ -87,9 +98,13 @@ const Item = ({ item, selected, toggleItem, setCoordinates, setDragging }) => {
   };
 
   const deleteItem = () => {
-    dispatch({
-      type: T.DELETE,
-      payload: { folder, id },
+    dispatch((d) => {
+      setTimeout(() => {
+        d({
+          type: T.DELETE,
+          payload: { folder, id },
+        });
+      }, 200);
     });
   };
 
@@ -97,7 +112,7 @@ const Item = ({ item, selected, toggleItem, setCoordinates, setDragging }) => {
     timer = setTimeout(() => {
       toggleItem(item, true);
       timer = null;
-    }, 500);
+    }, 300);
   };
 
   const onMouseUp = (e) => {
@@ -132,22 +147,21 @@ const Item = ({ item, selected, toggleItem, setCoordinates, setDragging }) => {
           onMouseUp={(e) => e.stopPropagation()}
         />
       )}
-      <From>{senderName || senderEmail || "(No name)"}</From>
+      <SenderInfo>{senderName || senderEmail || "(no name)"}</SenderInfo>
       <Summary>
-        <Subject>{format(20)(subject) || "(empty)"}</Subject>
-        &nbsp;
-        <Preheader>{format(50)(content) || "(empty)"}</Preheader>
+        <Subject>{format(30)(subject) || "(empty)"}</Subject>
+        <Preheader>
+          &nbsp;&mdash;&nbsp;{format(50)(content) || "(empty)"}
+        </Preheader>
       </Summary>
       {folder !== "trash" && (
         <Actions>
-          <Button
+          <IconButton
+            icon={faTrash}
             onClick={deleteItem}
             onMouseDown={(e) => e.stopPropagation()}
             onMouseUp={(e) => e.stopPropagation()}
-          >
-            DELETE
-          </Button>
-          <Button>Mark as Read</Button>
+          />
         </Actions>
       )}
     </Row>
